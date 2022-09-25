@@ -1,0 +1,17 @@
+{
+  "name": "api_graphql",
+  "version": "1.0.0",
+  "description": "Node and GraphQL",
+  "main": "src/main.js",
+  "author": "Rodrigo M. S.",
+  "license": "ISC",
+  "private": true,
+ 
+  "scripts": {
+    "start": "nodemon -r esm ."
+  },
+  "devDependencies": {
+    "esm": "^3.2.25",
+    "nodemon": "^2.0.20"
+  }
+}
