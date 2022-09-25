@@ -1,15 +1,30 @@
 import { createServer } from 'http'
 
+// fs - Biblioteca para sistema de arquivos.
+// readFile - Le arquivos de forma assíncrona.
+import { readFile } from 'fs'
+
+// path - Lida com caminhos de arquivos
+// revolve - Obtém o caminho relativo.
+import { resolve } from 'path'
+
+// decodificar os dados vindos por POST
+import { parse } from 'querystring'
+
 // ---------------------- Server and routes ----------------------
 
 const server = createServer((request, response) => {
   const routes = {
-    '/': () => {
-      pageHome(request, response)
-    },
-    '/status': () => {
-      pageStatus(request, response)
-    }
+    
+    '/': () => { homePage(request, response) },
+
+    '/status': () => { statusPage(request, response) },
+
+    '/sign-in': () => { pageSingIn(request, response) },
+
+    '/authenticate': () => { performAuthentication(request, response) },
+
+    '/home': () => { homePageAuthenticate(request, response) }
   }
 
   if(!routes[request.url]) {
@@ -34,14 +49,14 @@ server.listen(3000, '127.0.0.1', () => {
 // ---------------------- Functions routes ----------------------
 
 // Retorna texto
-function pageHome(request, response) {
+function homePage(request, response) {
   response.writeHead(200)
   response.write('Home')
   response.end()
 }
 
 // Retorna JSON
-function pageStatus(request, response) {
+function statusPage(request, response) {
   response.writeHead(200, {
     'Content-Type': 'application/json'
   })
@@ -52,6 +67,66 @@ function pageStatus(request, response) {
     })
   )
   response.end()
+}
+
+// Retorna um arquivo HTML
+function pageSingIn(request, response) {
+  // __dirname - Injeta o caminho completo para o arquivo. 
+  const path = resolve(__dirname,'./pages/sign-in.html')
+
+  readFile(path, (error, file) => {
+    if (error) {
+      response.writeHead(500, "Can\'t process HTML file.")
+      response.end()
+      return
+    }
+
+    response.writeHead(200)
+    response.write(file)
+    response.end()
+  })
+}
+
+// Realiza a autenticação de um usuário.
+function performAuthentication(request, response) {
+  let data = ''
+
+  // Patterns de evento.
+  // Vai ler o buffer aos poucos.
+  request.on('data', (chunk) => {
+    data += chunk
+  })
+
+  request.on('end',() => {
+    let params = parse(data)
+
+    // AQUI ENTRA A AUTENTICAÇÃO NO BANCO
+
+    // Caso seja valido redireciona para página com 
+    // necessidade de autenticação.
+    response.writeHead(301, {
+      Location: 'home'
+    })
+    response.end()
+  })
+}
+
+// Retorna um arquivo HTML
+function homePageAuthenticate(request, response) {
+  // __dirname - Injeta o caminho completo para o arquivo. 
+  const path = resolve(__dirname,'./pages/home.html')
+
+  readFile(path, (error, file) => {
+    if (error) {
+      response.writeHead(500, "Can\'t process HTML file.")
+      response.end()
+      return
+    }
+
+    response.writeHead(200)
+    response.write(file)
+    response.end()
+  })
 }
 
 function invalidRoutes(request, response) {
